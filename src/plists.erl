@@ -443,19 +443,19 @@ mapreduce(MapFunc, List, InitState, ReduceFunc, MapMalt) ->
 				     reducer(Parent, 0, InitState, ReduceFunc)
 			     end),
     MapFunc2 = fun (L) ->
-		       Reducer ! lists:map(MapFunc, L),
+		       Reducer ! {plists, lists:map(MapFunc, L)},
 		       1
 	       end,
     SentMessages = try runmany(MapFunc2, fun (A, B) -> A+B end, List, MapMalt)
 		   catch
 		       exit:Reason ->
 			   erlang:demonitor(ReducerRef, [flush]),
-			   Reducer ! die,
+			   Reducer ! {plists, die},
 			   exit(Reason)
 		   end,
-    Reducer ! {mappers, done, SentMessages},
+    Reducer ! {plists, mappers, done, SentMessages},
     Results = receive
-		  {Reducer, Results2} ->
+		  {plists, Reducer, Results2} ->
 		      Results2;
 		  {'DOWN', _, _, Reducer, Reason2} ->
 		      exit(Reason2)
@@ -468,11 +468,11 @@ mapreduce(MapFunc, List, InitState, ReduceFunc, MapMalt) ->
 
 reducer(Parent, NumReceived, State, Func) ->
     receive
-	die ->
+	{plists, die} ->
 	    nil;
-	{mappers, done, NumReceived} ->
-	    Parent ! {self (), State};
-	Keys  ->
+	{plists, mappers, done, NumReceived} ->
+	    Parent ! {plists, self(), State};
+	{plists, Keys}  ->
 	    reducer(Parent, NumReceived + 1, each_key(State, Func, Keys), Func)
     end.
 
@@ -560,13 +560,13 @@ runmany(Fun, Fuse, List, Nodes, Split, [{timeout, X}|Malt]) ->
     Parent = self(),
     Timer = spawn(fun () ->
 			  receive
-			      stoptimer ->
-				  Parent ! {timerstopped, self()}
+			      {plists, stoptimer} ->
+				  Parent ! {plists, timerstopped, self()}
 			  after X ->
-				  Parent ! {timerrang, self()},
+				  Parent ! {plists, timerrang, self()},
 				  receive
-				      stoptimer ->
-					  Parent ! {timerstopped, self()}
+				      {plists, stoptimer} ->
+					  Parent ! {plists, timerstopped, self()}
 				  end
 			  end
 		  end),
@@ -577,7 +577,7 @@ runmany(Fun, Fuse, List, Nodes, Split, [{timeout, X}|Malt]) ->
 	      willneverhappen ->
 		  nil
 	  after
-	    Timer ! stoptimer,
+	    Timer ! {plists, stoptimer},
 	    cleanup_timer(Timer)
 	  end,
     Ans;
@@ -608,9 +608,9 @@ runmany(Fun, Fuse, List, Nodes, Split, []) ->
 
 cleanup_timer(Timer) ->
     receive
-	{timerrang, Timer} ->
+	{plists, timerrang, Timer} ->
 	    cleanup_timer(Timer);
-	{timerstopped, Timer} ->
+	{plists, timerstopped, Timer} ->
 	    nil
     end.
 
@@ -636,11 +636,11 @@ schedulers_on_node(Node) ->
 determine_schedulers(Node) ->
     Parent = self(),
     Child = spawn(Node, fun () ->
-		  Parent ! {self(), erlang:system_info(schedulers)}
+		  Parent ! {plists, self(), erlang:system_info(schedulers)}
 	  end),
     erlang:monitor(process, Child),
     receive
-	{Child, X} ->
+	{plists, Child, X} ->
 	    receive
 		{'DOWN', _, _, Child, _Reason} ->
 		    nil
@@ -657,7 +657,7 @@ local_runmany(Fun, Fuse, List) ->
     Pids = lists:map(fun (L) ->
 			     F = fun () ->
 					 Parent !
-					     {self (), Fun(L)}
+					     {plists, self(), Fun(L)}
 				 end,
 			     {Pid, _} = erlang:spawn_monitor(F),
 			     Pid
@@ -675,11 +675,11 @@ local_runmany(Fun, Fuse, List) ->
 
 receivefrom(Pid) ->
     receive
-	{Pid, R} ->
+	{plists, Pid, R} ->
 	    R;
 	{'DOWN', _, _, BadPid, Reason} when Reason =/= normal ->
 	    throw({BadPid, Reason});
-	{timerrang, _} ->
+	{plists, timerrang, _} ->
 	    throw({nil, timeout})
     end.
 
@@ -716,12 +716,12 @@ cluster_runmany(Fun, Fuse, [Task|TaskList], [N|Nodes], Running, Results) ->
     case Task of
 	{Num, L2} ->
 	    Fun2 = fun () ->
-			   Parent ! {self(), Num, Fun(L2)}
+			   Parent ! {plists, self(), Num, Fun(L2)}
 		   end;
 	{fuse, R1, R2} ->
 	    {recursive, FuseFunc} = Fuse,
 	    Fun2 = fun () ->
-			   Parent ! {self(), fuse, FuseFunc(R1, R2)}
+			   Parent ! {plists, self(), fuse, FuseFunc(R1, R2)}
 		   end
     end,
     Fun3 = fun () ->
@@ -730,11 +730,11 @@ cluster_runmany(Fun, Fuse, [Task|TaskList], [N|Nodes], Running, Results) ->
 		         exit:siblingdied ->
 			   ok;
 			 exit:Reason ->
-			   Parent ! {self(), error, Reason};
+			   Parent ! {plists, self(), error, Reason};
 			 error:R ->
-			   Parent ! {self(), error, {R, erlang:get_stacktrace()}};
+			   Parent ! {plists, self(), error, {R, erlang:get_stacktrace()}};
 			 throw:R ->
-			   Parent ! {self(), error, {{nocatch, R}, erlang:get_stacktrace()}}
+			   Parent ! {plists, self(), error, {{nocatch, R}, erlang:get_stacktrace()}}
 			 end
 	   end,
     Pid = spawn(N, Fun3),
@@ -743,13 +743,13 @@ cluster_runmany(Fun, Fuse, [Task|TaskList], [N|Nodes], Running, Results) ->
 % We can't start a new process, but can watch over already running ones
 cluster_runmany(Fun, Fuse, TaskList, Nodes, Running, Results) when length(Running) > 0 ->
     receive
-	{_Pid, error, Reason} ->
+	{plists, _Pid, error, Reason} ->
 	    RunningPids = lists:map(fun ({Pid, _, _}) ->
 					    Pid
 				    end,
 				    Running),
 	    handle_error(junkvalue, Reason, RunningPids);
-	{Pid, Num, Result} ->
+	{plists, Pid, Num, Result} ->
 	    % throw out the exit message, Reason should be
 	    % normal, noproc, or noconnection
 	    receive {'DOWN', _, _, Pid, _Reason} ->
@@ -758,7 +758,7 @@ cluster_runmany(Fun, Fuse, TaskList, Nodes, Running, Results) when length(Runnin
 	    {Running2, FinishedNode, _} = delete_running(Pid, Running, []),
 	    cluster_runmany(Fun, Fuse, TaskList,
 			    [FinishedNode|Nodes], Running2, [{Num, Result}|Results]);
-	{timerrang, _} ->
+	{plists, timerrang, _} ->
 	    RunningPids = lists:map(fun ({Pid, _, _}) ->
 					    Pid
 				    end,
@@ -803,9 +803,9 @@ error_cleanup(BadPid, BadPid) ->
     ok;
 error_cleanup(Pid, BadPid) ->
     receive
-	{Pid, _} ->
+	{plists, Pid, _} ->
 	    error_cleanup(Pid, BadPid);
-	{Pid, _, _} ->
+	{plists, Pid, _, _} ->
 	    error_cleanup(Pid, BadPid);
 	{'DOWN', _, _, Pid, _Reason} ->
 	    ok
