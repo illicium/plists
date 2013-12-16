@@ -288,6 +288,8 @@ foreach(Fun, List) ->
 % <a href="http://www.erlang.org/doc/man/lists.html">lists</a>
 % except it makes no guarantee about the order it processes list elements.
 % @spec (Fun, List, Malt) -> void()
+foreach(_Fun, [], _Malt) ->
+    ok;
 foreach(Fun, List, Malt) ->
     runmany(fun (L) ->
 		    lists:foreach(Fun, L)
