@@ -170,12 +170,14 @@ runmany/3, runmany/4]).
 % @doc Same semantics as in module
 % <a href="http://www.erlang.org/doc/man/lists.html">lists</a>.
 % @spec (Fun, List) -> bool()
+-spec all(_,_) -> boolean().
 all(Fun, List) ->
     all(Fun, List, 1).
 
 % @doc Same semantics as in module
 % <a href="http://www.erlang.org/doc/man/lists.html">lists</a>.
 % @spec (Fun, List, Malt) -> bool()
+-spec all(_,_,_) -> boolean().
 all(Fun, List, Malt) ->
     try runmany(fun (L) ->
 			B = lists:all(Fun, L),
@@ -198,12 +200,14 @@ all(Fun, List, Malt) ->
 % @doc Same semantics as in module
 % <a href="http://www.erlang.org/doc/man/lists.html">lists</a>.
 % @spec (Fun, List) -> bool()
+-spec any(_,_) -> boolean().
 any(Fun, List) ->
     any(Fun, List, 1).
 
 % @doc Same semantics as in module
 % <a href="http://www.erlang.org/doc/man/lists.html">lists</a>.
 % @spec (Fun, List, Malt) -> bool()
+-spec any(_,_,_) -> boolean().
 any(Fun, List, Malt) ->
     try runmany(fun (L) ->
 			B = lists:any(Fun, L),
@@ -226,12 +230,14 @@ any(Fun, List, Malt) ->
 % @doc Same semantics as in module
 % <a href="http://www.erlang.org/doc/man/lists.html">lists</a>.
 % @spec (Fun, List) -> list()
+-spec filter(_,_) -> any().
 filter(Fun, List) ->
     filter(Fun, List, 1).
 
 % @doc Same semantics as in module
 % <a href="http://www.erlang.org/doc/man/lists.html">lists</a>.
 % @spec (Fun, List, Malt) -> list()
+-spec filter(_,_,_) -> any().
 filter(Fun, List, Malt) ->
     runmany(fun (L) ->
 		    lists:filter(Fun, L)
@@ -247,11 +253,13 @@ filter(Fun, List, Malt) ->
 % @doc Like below, but assumes 1 as the Malt. This function is almost useless,
 % and is intended only to aid converting code from using lists to plists.
 % @spec (Fun, InitAcc, List) -> term()
+-spec fold(_,_,_) -> any().
 fold(Fun, InitAcc, List) ->
     fold(Fun, Fun, InitAcc, List, 1).
 
 % @doc Like below, but uses the Fun as the Fuse by default.
 % @spec (Fun, InitAcc, List, Malt) -> term()
+-spec fold(_,_,_,_) -> any().
 fold(Fun, InitAcc, List, Malt) ->
     fold(Fun, Fun, InitAcc, List, Malt).
 
@@ -273,6 +281,7 @@ fold(Fun, InitAcc, List, Malt) ->
 % Malt is the malt for the initial folding of sublists, and for the
 % possible recursive fuse.
 % @spec (Fun, Fuse, InitAcc, List, Malt) -> term()
+-spec fold(_,_,_,_,_) -> any().
 fold(Fun, Fuse, InitAcc, List, Malt) ->
     Fun2 = fun (L) -> lists:foldl(Fun, InitAcc, L) end,
     runmany(Fun2, Fuse, List, Malt).
@@ -281,6 +290,7 @@ fold(Fun, Fuse, InitAcc, List, Malt) ->
 % <a href="http://www.erlang.org/doc/man/lists.html">lists</a>
 % except it makes no guarantee about the order it processes list elements.
 % @spec (Fun, List) -> void()
+-spec foreach(_,_) -> any().
 foreach(Fun, List) ->
     foreach(Fun, List, 1).
 
@@ -288,6 +298,7 @@ foreach(Fun, List) ->
 % <a href="http://www.erlang.org/doc/man/lists.html">lists</a>
 % except it makes no guarantee about the order it processes list elements.
 % @spec (Fun, List, Malt) -> void()
+-spec foreach(_,_,_) -> any().
 foreach(_Fun, [], _Malt) ->
     ok;
 foreach(Fun, List, Malt) ->
@@ -302,12 +313,14 @@ foreach(Fun, List, Malt) ->
 % @doc Same semantics as in module
 % <a href="http://www.erlang.org/doc/man/lists.html">lists</a>.
 % @spec (Fun, List) -> list()
+-spec map(_,_) -> any().
 map(Fun, List) ->
     map(Fun, List, 1).
 
 % @doc Same semantics as in module
 % <a href="http://www.erlang.org/doc/man/lists.html">lists</a>.
 % @spec (Fun, List, Malt) -> list()
+-spec map(_,_,_) -> any().
 map(Fun, List, Malt) ->
     runmany(fun (L) ->
 		    lists:map(Fun, L)
@@ -320,12 +333,14 @@ map(Fun, List, Malt) ->
 % @doc Same semantics as in module
 % <a href="http://www.erlang.org/doc/man/lists.html">lists</a>.
 % @spec (Fun, List) -> {list(), list()}
+-spec partition(_,_) -> any().
 partition(Fun, List) ->
     partition(Fun, List, 1).
 
 % @doc Same semantics as in module
 % <a href="http://www.erlang.org/doc/man/lists.html">lists</a>.
 % @spec (Fun, List, Malt) -> {list(), list()}
+-spec partition(_,_,_) -> any().
 partition(Fun, List, Malt) ->
     runmany(fun (L) ->
 		    lists:partition(Fun, L)
@@ -341,6 +356,7 @@ partition(Fun, List, Malt) ->
 % @doc Same semantics as in module
 % <a href="http://www.erlang.org/doc/man/lists.html">lists</a>.
 % @spec (List) -> list()
+-spec sort(_) -> any().
 sort(List) ->
     sort(fun (A, B) ->
 		 A =< B
@@ -350,6 +366,7 @@ sort(List) ->
 % @doc Same semantics as in module
 % <a href="http://www.erlang.org/doc/man/lists.html">lists</a>.
 % @spec (Fun, List) -> list()
+-spec sort(_,_) -> any().
 sort(Fun, List) ->
     sort(Fun, List, ?SORTMALT).
 
@@ -361,6 +378,7 @@ sort(Fun, List) ->
 % seperate process. Malt defaults to 100, causing the list to be split into
 % 100-element sublists.
 % @spec (Fun, List, Malt) -> list()
+-spec sort(_,_,_) -> any().
 sort(Fun, List, Malt) ->
     Fun2 = fun (L) ->
 	    lists:sort(Fun, L)
@@ -373,6 +391,7 @@ sort(Fun, List, Malt) ->
 % @doc Same semantics as in module
 % <a href="http://www.erlang.org/doc/man/lists.html">lists</a>.
 % @spec (List) -> list()
+-spec usort(_) -> any().
 usort(List) ->
     usort(fun (A, B) ->
 		 A =< B
@@ -382,6 +401,7 @@ usort(List) ->
 % @doc Same semantics as in module
 % <a href="http://www.erlang.org/doc/man/lists.html">lists</a>.
 % @spec (Fun, List) -> list()
+-spec usort(_,_) -> any().
 usort(Fun, List) ->
     usort(Fun, List, ?SORTMALT).
 
@@ -395,6 +415,7 @@ usort(Fun, List) ->
 %
 % usort removes duplicate elments while it sorts.
 % @spec (Fun, List, Malt) -> list()
+-spec usort(_,_,_) -> any().
 usort(Fun, List, Malt) ->
     Fun2 = fun (L) ->
 	    lists:usort(Fun, L)
@@ -408,6 +429,7 @@ usort(Fun, List, Malt) ->
 % @spec (MapFunc, List) -> Dict
 % MapFunc = (term()) -> DeepListOfKeyValuePairs
 % DeepListOfKeyValuePairs = [DeepListOfKeyValuePairs] | {Key, Value}
+-spec mapreduce(_,_) -> any().
 mapreduce(MapFunc, List) ->
     mapreduce(MapFunc, List, 1).
 
@@ -416,6 +438,7 @@ mapreduce(MapFunc, List) ->
 % <a href="http://www.erlang.org/doc/man/dict.html">dict</a>,
 % with values {Key, [Value1, Value2...]}.
 % This dict is returned as the result.
+-spec mapreduce(_,_,_) -> any().
 mapreduce(MapFunc, List, MapMalt) ->
     mapreduce(MapFunc, List, dict:new(), fun add_key/3, MapMalt).
 
@@ -438,6 +461,7 @@ mapreduce(MapFunc, List, MapMalt) ->
 % MapFunc = (term()) -> DeepListOfKeyValuePairs
 % DeepListOfKeyValuePairs = [DeepListOfKeyValuePairs] | {Key, Value}
 % ReduceFunc = (OldState::term(), Key::term(), Value::term() -> NewState::term()
+-spec mapreduce(_,_,_,_,_) -> any().
 mapreduce(MapFunc, List, InitState, ReduceFunc, MapMalt) ->
     Parent = self(),
     {Reducer, ReducerRef} =
@@ -468,6 +492,7 @@ mapreduce(MapFunc, List, InitState, ReduceFunc, MapMalt) ->
     end,
     Results.
 
+-spec reducer(pid(),non_neg_integer(),_,_) -> 'nil' | {'plists',pid(),_}.
 reducer(Parent, NumReceived, State, Func) ->
     receive
 	{plists, die} ->
@@ -478,6 +503,7 @@ reducer(Parent, NumReceived, State, Func) ->
 	    reducer(Parent, NumReceived + 1, each_key(State, Func, Keys), Func)
     end.
 
+-spec each_key(_,_,maybe_improper_list(maybe_improper_list(maybe_improper_list(any(),[] | {_,_}) | {_,_},[] | {_,_}) | {_,_},[] | {_,_}) | {_,_}) -> any().
 each_key(State, Func, {Key, Value}) ->
     Func(State, Key, Value);
 each_key(State, Func, [List|Keys]) ->
@@ -485,6 +511,7 @@ each_key(State, Func, [List|Keys]) ->
 each_key(State, _, []) ->
     State.
 
+-spec add_key(dict:dict(_,_),_,_) -> dict:dict(_,_).
 add_key(Dict, Key, Value) ->
     case dict:is_key(Key, Dict) of
 	true ->
@@ -496,6 +523,7 @@ add_key(Dict, Key, Value) ->
 % @doc Like below, but assumes a Malt of 1,
 % meaning each element of the list is processed by a seperate process.
 % @spec (Fun, Fuse, List) -> term()
+-spec runmany(_,_,_) -> any().
 runmany(Fun, Fuse, List) ->
     runmany(Fun, Fuse, List, 1).
 
@@ -534,11 +562,13 @@ runmany(Fun, Fuse, List) ->
 % Fun = (list()) -> term()
 % Fuse = FuseFunc | {recursive, FuseFunc}
 % FuseFunc = (term(), term()) -> term()
+-spec runmany(_,_,_,_) -> any().
 runmany(Fun, Fuse, List, Malt) when is_list(Malt) ->
     runmany(Fun, Fuse, List, local, no_split, Malt);
 runmany(Fun, Fuse, List, Malt) ->
     runmany(Fun, Fuse, List, [Malt]).
 
+-spec runmany(_,_,_,_,'no_split' | integer(),maybe_improper_list()) -> any().
 runmany(Fun, Fuse, List, Nodes, no_split, [MaltTerm|Malt]) when is_integer(MaltTerm) ->
     runmany(Fun, Fuse, List, Nodes, MaltTerm, Malt);
 % run a process for each scheduler
@@ -608,6 +638,7 @@ runmany(Fun, Fuse, List, Nodes, Split, []) ->
     List2 = splitmany(List, Split),
     cluster_runmany(Fun, Fuse, List2, Nodes).
 
+-spec cleanup_timer(pid()) -> 'nil'.
 cleanup_timer(Timer) ->
     receive
 	{plists, timerrang, Timer} ->
@@ -616,6 +647,7 @@ cleanup_timer(Timer) ->
 	    nil
     end.
 
+-spec schedulers_on_node(_) -> any().
 schedulers_on_node(Node) ->
     case get(plists_schedulers_on_nodes) of
 	undefined ->
@@ -635,6 +667,7 @@ schedulers_on_node(Node) ->
 	    end
     end.
 
+-spec determine_schedulers(atom()) -> any().
 determine_schedulers(Node) ->
     Parent = self(),
     Child = spawn(Node, fun () ->
@@ -654,6 +687,7 @@ determine_schedulers(Node) ->
 
 % local runmany, for when we weren't invoked with {processes, X}
 % or {nodes, NodeList}. Every sublist is processed in parallel.
+-spec local_runmany(_,_,[[any()]]) -> any().
 local_runmany(Fun, Fuse, List) ->
     Parent = self (),
     Pids = lists:map(fun (L) ->
@@ -675,6 +709,7 @@ local_runmany(Fun, Fuse, List) ->
 		  end, Pids),
     fuse(Fuse, Answers).
 
+-spec receivefrom(_) -> any().
 receivefrom(Pid) ->
     receive
 	{plists, Pid, R} ->
@@ -686,6 +721,7 @@ receivefrom(Pid) ->
     end.
 
 % Convert List into [{Number, Sublist}]
+-spec cluster_runmany(_,_,[[any()]],_) -> any().
 cluster_runmany(Fun, Fuse, List, Nodes) ->
     {List2, _} = lists:foldl(fun (X, {L, Count}) ->
 				{[{Count, X}|L], Count+1}
@@ -694,6 +730,7 @@ cluster_runmany(Fun, Fuse, List, Nodes) ->
     cluster_runmany(Fun, Fuse, List2, Nodes, [], []).
 
 % Add a pair of results into the TaskList as a fusing task
+-spec cluster_runmany(_,_,[{_,_} | {'fuse',_,_}],_,[{_,_,_}],[{_,_}]) -> any().
 cluster_runmany(Fun, {recursive, Fuse}, [], Nodes, Running,
 		[{_, R1}, {_, R2}|Results]) ->
     cluster_runmany(Fun, {recursive, Fuse}, [{fuse, R1, R2}], Nodes,
@@ -787,11 +824,13 @@ cluster_runmany(Fun, Fuse, TaskList, Nodes, Running, Results) when length(Runnin
 cluster_runmany(_, _, [_Non|_Empty], []=_Nodes, []=_Running, _) ->
     exit(allnodescrashed).
 
+-spec delete_running(_,[{_,_,_},...],[{_,_,_}]) -> {[{_,_,_}],_,_}.
 delete_running(Pid, [{Pid, Node, List}|Running], Acc) ->
     {Running ++ Acc, Node, List};
 delete_running(Pid, [R|Running], Acc) ->
     delete_running(Pid, Running, [R|Acc]).
 
+-spec handle_error(_,_,_) -> none().
 handle_error(BadPid, Reason, Pids) ->
     lists:foreach(fun (Pid) ->
 			  exit(Pid, siblingdied)
@@ -801,6 +840,7 @@ handle_error(BadPid, Reason, Pids) ->
 		  end, Pids),
     exit(Reason).
 
+-spec error_cleanup(_,_) -> 'ok'.
 error_cleanup(BadPid, BadPid) ->
     ok;
 error_cleanup(Pid, BadPid) ->
@@ -813,6 +853,7 @@ error_cleanup(Pid, BadPid) ->
 	    ok
     end.
 
+-spec normal_cleanup(_) -> 'ok'.
 normal_cleanup(Pid) ->
     receive
 	{'DOWN', _, _, Pid, _Reason} ->
@@ -820,6 +861,7 @@ normal_cleanup(Pid) ->
     end.
 
 % edge case
+-spec fuse(_,[any()]) -> any().
 fuse(_, []) ->
     [];
 fuse({reverse, _}=Fuse, Results) ->
@@ -828,6 +870,7 @@ fuse({reverse, _}=Fuse, Results) ->
 fuse(Fuse, [R1|Results]) ->
     fuse(Fuse, Results, R1).
 
+-spec fuse(_,[any()],_) -> any().
 fuse({reverse, FuseFunc}=Fuse, [R2|Results], R1) ->
     fuse(Fuse, Results, FuseFunc(R2, R1));
 fuse(Fuse, [R2|Results], R1) ->
@@ -838,9 +881,11 @@ fuse(_, [], R) ->
 % Splits a list into a list of sublists, each of size Size,
 % except for the last element which is less if the original list
 % could not be evenly divided into Size-sized lists.
+-spec splitmany(_,'no_split' | integer()) -> [[any()]].
 splitmany(List, Size) ->
     splitmany(List, [], Size).
 
+-spec splitmany(_,[[any()]],'no_split' | integer()) -> [[any()]].
 splitmany([], Acc, _) ->
     lists:reverse(Acc);
 splitmany(List, Acc, Size) ->
@@ -849,9 +894,11 @@ splitmany(List, Acc, Size) ->
 
 % Like lists:split, except it splits a list smaller than its first
 % parameter
+-spec split('no_split' | integer(),_) -> {[any()],_}.
 split(Size, List) ->
     split(Size, List, []).
 
+-spec split('no_split' | integer(),_,[any()]) -> {[any()],_}.
 split(0, List, Acc) ->
     {lists:reverse(Acc), List};
 split(Size, [H|List], Acc) ->
